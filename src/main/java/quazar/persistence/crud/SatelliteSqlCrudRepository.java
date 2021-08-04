@@ -1,4 +1,4 @@
-package quazar.persistence.curd;
+package quazar.persistence.crud;
 
 import org.springframework.data.repository.CrudRepository;
 import quazar.persistence.entity.SatelliteEntity;

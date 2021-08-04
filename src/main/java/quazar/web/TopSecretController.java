@@ -3,44 +3,88 @@ package quazar.web;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import quazar.domain.Coordinate;
-import quazar.domain.service.MessageDecryptor;
-import quazar.domain.service.StarshipFinder;
-import quazar.web.dto.InterceptedMessage;
-import quazar.web.dto.RequestMessage;
-import quazar.web.dto.ResponseMessage;
+import quazar.domain.InterceptedMessage;
+import quazar.domain.service.CommunicationManager;
+import quazar.web.dto.InterceptedMessageDto;
+import quazar.web.dto.RequestMessageDto;
+import quazar.web.dto.ResponseMessageDto;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/topsecret")
+@RequestMapping("/")
 @RequiredArgsConstructor
 public class TopSecretController {
 
-    private final StarshipFinder starshipFinder;
-    private final MessageDecryptor messageDecryptor;
+    private final CommunicationManager communicationManager;
+    private static final String ERROR_MESSAGE = "NO HAY SUFICIENTE INFORMACIÓN";
 
+    @PostMapping(path="topsecret", consumes="application/json")
+    public ResponseEntity<ResponseMessageDto> topSecretResolveReceivedMessages(
+            @RequestBody RequestMessageDto requestMessageDto) {
+
+         return communicationManager.resolveWithReceivedMessages(
+                        requestMessageDto.getSatellites().stream()
+                                .map(InterceptedMessageDto::toInterceptedMessage)
+                                .collect(Collectors.toList()))
+
+                .map(resolvedMessage -> ResponseMessageDto.builder()
+                                            .message(resolvedMessage.getMessage())
+                                            .position(resolvedMessage.getPosition())
+                                        .build())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping(path="topsecret_split/{name}", consumes="application/json")
+    public ResponseEntity<InterceptedMessage> topSecretSplitSaveSplitMessage(
+            @PathVariable String name,
+            @RequestBody InterceptedMessageDto interceptedMessageDto) {
+
+        interceptedMessageDto.setName(name);
+        return communicationManager.saveSplitMessage(interceptedMessageDto.toInterceptedMessage())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping(path="topsecret_split")
+    public ResponseEntity<ResponseMessageDto> topSecretSplitResolveWithSavedMessages() {
+        return communicationManager.resolveWithSavedMessages()
+                .map(resolvedMessage ->
+                        ResponseEntity.ok(
+                                ResponseMessageDto.builder()
+                                    .message(resolvedMessage.getMessage())
+                                    .position(resolvedMessage.getPosition())
+                                    .build()))
+                .orElseGet(() -> ResponseEntity.ok(
+                                    ResponseMessageDto.builder()
+                                        .errors(ERROR_MESSAGE)
+                                    .build()));
+    }
+
+
+
+
+     /*
     @GetMapping("/sample")
-    public RequestMessage sampleDto() {
+    public RequestMessageDto sampleDto() {
         String[] message1 = {"",     "es", "",   ""};
         String[] message2 = {"este", "",   "un", "mensaje"};
         String[] message3 = {"",     "es", "un", "mensaje"};
 
-        return new RequestMessage(
+        return new RequestMessageDto(
                 List.of(
-                InterceptedMessage.builder()
+                InterceptedMessageDto.builder()
                         .name("kenobi")
                         .distance(100.0)
                         .messages(message1)
                         .build(),
-                InterceptedMessage.builder()
+                InterceptedMessageDto.builder()
                         .name("sato")
                         .distance(142.7)
                         .messages(message2)
                         .build(),
-                InterceptedMessage.builder()
+                InterceptedMessageDto.builder()
                         .name("skywalker")
                         .distance(115.5)
                         .messages(message3)
@@ -48,22 +92,5 @@ public class TopSecretController {
                 )
         );
     }
-
-    @PostMapping(consumes="application/json")
-    public ResponseEntity<ResponseMessage> findStarshipPosition(@RequestBody RequestMessage requestMessage) {
-
-        List<String[]> result = requestMessage.getSatellites().stream()
-                                                .map(m -> m.getMessages())
-                                                .collect(Collectors.toList());
-        String[][] encryptedMessages = new String[result.size()][];
-
-        encryptedMessages = result.toArray(encryptedMessages);
-        Optional<String> message = messageDecryptor.backwardDecryptor(encryptedMessages);
-
-        Optional<Coordinate> position = starshipFinder.findStarship(requestMessage.getSatellites());
-
-        return message.flatMap(m -> position
-                                .map( p -> ResponseEntity.ok(new ResponseMessage(p, m))))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+    */
 }

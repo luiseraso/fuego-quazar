@@ -1,61 +1,41 @@
 package quazar.domain.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import quazar.domain.Coordinate;
+import quazar.domain.InterceptedMessage;
 import quazar.domain.Satellite;
-import quazar.domain.respository.SatelliteRepository;
-import quazar.web.dto.DistanceToSatellite;
-import quazar.web.dto.InterceptedMessage;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.lang.Math.pow;
 
 @Service
-@RequiredArgsConstructor
 public class StarshipFinder {
 
-    private final SatelliteRepository satelliteRepository;
-
-    public Optional<Coordinate> findStarship(List<InterceptedMessage> interceptedMessage) {
-        List<DistanceToSatellite> distances = interceptedMessage.stream()
-                .map(message -> satelliteRepository.findById(message.getName())
-                                    .map(s -> DistanceToSatellite.builder()
-                                        .satellite(s)
-                                        .distance(message.getDistance())
-                                        .build()))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .sorted(Comparator.comparing(DistanceToSatellite::getDistance))
-                .limit(3)
-                .collect(Collectors.toList());
-
-        if (distances.size() < 3) {
+    public Optional<Coordinate> getLocation(List<InterceptedMessage> interceptedMessages) {
+        if (interceptedMessages.size() < 3) {
             return Optional.empty();
         }
-        return Optional.of(relocateSatellitesAndFindStarship(distances));
+        return Optional.of(relocateSatellitesAndFindStarship(interceptedMessages));
     }
 
-    private Coordinate relocateSatellitesAndFindStarship(List<DistanceToSatellite> distanceToSatellites) {
-        Satellite centralSatellite =  distanceToSatellites.get(0).getSatellite();
+    private Coordinate relocateSatellitesAndFindStarship(List<InterceptedMessage> interceptedMessages) {
+        Satellite centralSatellite =  interceptedMessages.get(0).getSatellite();
         double movementInX = - centralSatellite.getPosition().getX();
         double movementInY = - centralSatellite.getPosition().getY();
-        moveSatellites(distanceToSatellites, movementInX, movementInY);
+        moveSatellites(interceptedMessages, movementInX, movementInY);
 
-        Satellite baseRotationSatellite =  distanceToSatellites.get(1).getSatellite();
+        Satellite baseRotationSatellite =  interceptedMessages.get(1).getSatellite();
         double sin = calculateSine(baseRotationSatellite.getPosition());
         double cos = calculateCosine(baseRotationSatellite.getPosition());
-        rotateSatellites(distanceToSatellites, sin, cos);
+        rotateSatellites(interceptedMessages, sin, cos);
 
-        Coordinate canonicalCoordinate = findStarshipWithRelocatedSatellites(distanceToSatellites);
+        Coordinate canonicalCoordinate = findStarshipWithRelocatedSatellites(interceptedMessages);
         return canonicalCoordinate.rotateInverse(sin, cos).moveInverse(movementInX, movementInY);
     }
 
-    private Coordinate findStarshipWithRelocatedSatellites(List<DistanceToSatellite> distanceToSatellites) {
+    private Coordinate findStarshipWithRelocatedSatellites(List<InterceptedMessage> distanceToSatellites) {
         double d0 = distanceToSatellites.get(0).getDistance();
 
         Satellite baseRotationSatellite = distanceToSatellites.get(1).getSatellite();
@@ -73,13 +53,13 @@ public class StarshipFinder {
         return new Coordinate(x, y);
     }
 
-    private void moveSatellites(List<DistanceToSatellite> messageWithSatellites, double movementInX, double movementInY) {
+    private void moveSatellites(List<InterceptedMessage> messageWithSatellites, double movementInX, double movementInY) {
         messageWithSatellites.forEach(
                 m -> m.getSatellite().setPosition(
                         m.getSatellite().getPosition().move(movementInX, movementInY)));
     }
 
-    private void rotateSatellites(List<DistanceToSatellite> messageWithSatellites, double sin, double cos) {
+    private void rotateSatellites(List<InterceptedMessage> messageWithSatellites, double sin, double cos) {
         messageWithSatellites.forEach(
                 m -> m.getSatellite().setPosition(
                         m.getSatellite().getPosition().rotate(sin, cos)));

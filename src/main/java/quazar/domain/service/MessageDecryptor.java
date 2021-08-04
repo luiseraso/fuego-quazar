@@ -11,7 +11,7 @@ import java.util.StringJoiner;
 @Service
 public class MessageDecryptor {
 
-    public Optional<String> backwardDecryptor(String[][] messages) {
+    public Optional<String> getMessage(String[][] messages) {
 
         Deque<String> result = new ArrayDeque<>();
         int wordPosition = 1;

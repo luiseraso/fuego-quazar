@@ -1,0 +1,90 @@
+@startuml
+'https://plantuml.com/class-diagram
+package web {
+    class TopSecretController <<RestController>> {
+        + topSecretResolveReceivedMessages(RequestMessageDto): ResponseEntity<ResponseMessageDto>
+        + topSecretSplitResolveWithSavedMessages(): ResponseEntity<ResponseMessageDto>
+
+        + topSecretSplitSaveSplitMessage(String, InterceptedMessageDto): ResponseEntity<InterceptedMessage>
+    }
+
+    package dto {
+    }
+}
+
+package domain {
+
+    class Satellite #CCFFFF {
+        - String name
+        - Coordinate position
+    }
+
+    class Coordinate #CCFFFF {
+        - double x
+        - double y
+    }
+
+    class InterceptedMessage #CCFFFF {
+        - Satellite satellite
+        - double distance
+        - String[] message
+    }
+
+    class ResolvedMessage #CCFFFF {
+        - Coordinate position
+        - String message
+    }
+
+    package service {
+        class StarshipFinder <<Service>> {
+            + getLocation(List<InterceptedMessage>): Optional<Coordinate>
+        }
+
+        class MessageDecryptor <<Service>> {
+            + getMessage(String[][]): Optional<String>
+        }
+
+        class CommunicationManager <<Service>> {
+            + resolveWithReceivedMessages(List<InterceptedMessage>): Optional<ResolvedMessage>
+            + resolveWithSavedMessages(): Optional<ResolvedMessage>
+
+            + saveSplitMessage(InterceptedMessage): Optional<InterceptedMessage>
+            + removeAllSplitMessages()
+        }
+    }
+
+    package repository {
+        interface InterceptedMessageRepository {
+            + findAll(): List<InterceptedMessage>
+            + saveOverwriting(InterceptedMessage): InterceptedMessage
+            + deleteAll()
+        }
+
+        interface SatelliteRepository {
+            + findById(String): Optional<Satellite>
+            + save(Satellite): Satellite
+
+        }
+    }
+}
+
+package persistence {
+    package crud{}
+    package "entity"{}
+    package mapper {}
+}
+
+
+InterceptedMessage <.. CommunicationManager
+ResolvedMessage <.. CommunicationManager
+
+CommunicationManager --> MessageDecryptor
+CommunicationManager --> StarshipFinder
+
+InterceptedMessage ..> InterceptedMessageRepository
+Satellite ..> SatelliteRepository
+
+Coordinate <-- Satellite
+
+
+@enduml
