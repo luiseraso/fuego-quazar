@@ -2,6 +2,7 @@ package quazar.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import quazar.domain.Coordinate;
 import quazar.domain.InterceptedMessage;
 import quazar.domain.ResolvedMessage;
 import quazar.domain.respository.InterceptedMessageRepository;

@@ -1,0 +1,150 @@
+{
+	"info": {
+		"_postman_id": "72ed8420-e024-4c92-b354-7f1726718b82",
+		"name": "fuego-quazar",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "delete-saved-messages",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/topsecret_split",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"topsecret_split"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "resolve-with-saved-messages",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/topsecret_split",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"topsecret_split"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "resolve-sending-messages",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"satellites\": [\n        {\n            \"name\": \"kenobi\",\n            \"distance\": 100.0,\n            \"messages\": [\"\", \"\", \"es\", \"\", \"\"]\n        },\n        {\n            \"name\": \"sato\",\n            \"distance\": 142.7,\n            \"messages\": [\"\", \"este\", \"\", \"\", \"mensaje\"]\n        },\n        {\n            \"name\": \"skywalker\",\n            \"distance\": 115.5,\n            \"messages\": [\"\", \"\", \"es\", \"un\", \"mensaje\"]\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/topsecret",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"topsecret"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "split-kenobi",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"distance\": 100.0,\n    \"messages\": [\"\", \"\", \"es\", \"\", \"\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/topsecret_split/kenobi",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"topsecret_split",
+						"kenobi"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "split-skywalker",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"distance\": 115.5,\n    \"messages\": [\"\", \"\", \"es\", \"un\", \"mensaje\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/topsecret_split/skywalker",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"topsecret_split",
+						"skywalker"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "split-sato",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"distance\": 142.7,\n    \"messages\": [\"\", \"este\", \"\", \"\", \"mensaje\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/topsecret_split/sato",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"topsecret_split",
+						"sato"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

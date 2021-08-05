@@ -1,5 +1,14 @@
 # Fuego Quazar
 
+## Despliegue en Cloud
+El proyecto de ejemplo está desplegado en la nube mediante el servicio de App Engine de `Google GCP`, igualmente incluye
+una capa de persistencia implementada en `Cloud SQL`.
+
+- URL: `https://quazar-321812.uc.r.appspot.com`
+- Detalles de la API: [https://quazar-321812.uc.r.appspot.com/swagger-ui.html](https://quazar-321812.uc.r.appspot.com/swagger-ui.html)
+- Igualmente en la carpeta `/doc` se incluyó un proyecto postman con ejemplos de llamadas a los servicios.
+
+## Organización del proyecto
 El proyecto está divido en tres paquetes: `domain`, `web` y `persistence`.
 
 Las implementación de las funcionalidades del negocio se encuentran en el paquete dominio. Por lo tanto, este documento
@@ -7,8 +16,8 @@ se centra en explicar dicho módulo. La figura a continuación incluye los conce
 
 ![dominio](https://github.com/luiseraso/fuego-quazar/blob/f456469ecb3ee16646da088dda4be6285d814fb3/doc/domain.png?raw=true "domain module")
 
-## Domain
-### Clases de Dominio
+### Domain
+#### Clases de Dominio
 Se tiene 4 clases de dominio representadas en color azul. `Satellite` la cual gestiona la información de cada satélite
 incluidas sus coordenadas `Coordinate`. `InterceptedMessage` que gestiona los mensajes recibidos, los que incluye el
 satélite, la distancia y el mensaje encriptado (porción conocida del mensaje). Estas tienen asociado un repositorio de
@@ -16,7 +25,7 @@ dominio el cual define una interfaz a ser implementada por diferentes modelos de
 no incluye un repositorio porque solo se utiliza para responder a las peticiones de las capas superiores y no requiere
 ser persistida. Los mensajes de solicitud de las capas superiores utilizan la clase `InterceptedMessage`.
 
-### Servicios
+#### Servicios
 La funcionalidad a desarrollar en el nivel 1 del proyecto se implementó mediante los servicios `StarshipFinder` y
 `MessageDecryptor`. Los dos son servicios que no manejan ningún estado y por lo tanto no acceden a ningún repositorio.
 
@@ -34,12 +43,12 @@ Cada metodo en este servicio está asociada a las llamadas REST que se implement
 - `saveSplitMessage`: POST /topsecret_split/{satellite_name}
 - `resolveWithSavedMessages`: GET /topsecret_split
 
-### Repository
+#### Repository
 Solo se tienen dos interfaces que definen el comportamiento para los repositorios. `InterceptedMessageRepository` y
 `SatelliteRepository`. Los repositorios son limpios, es decir solo reciben como parámetros y devuelven como resultado
 objetos definidos en el dominio.
 
-## Web
+### Web
 El paquete web implementa los servicios REST solicitados mediante el controlador `TopSecretController`. Su función es
 transformar los mensajes recibidos mediante DTOs a mensajes del dominio para posteriormente delegar la ejecución de las
 solicitudes al servicio `CommunicationManager`.
@@ -51,10 +60,11 @@ En este paquete también se incluyen algunas clases DTOs encargadas de mapear lo
 - `topSecretSplitSaveSplitMessage`: POST /topsecret_split/{satellite_name}
 - `topSecretSplitResolveWithSavedMessages`: GET /topsecret_split
 
-## Persistence
-La capa de persistencia se implementó mediante spring-data almacenando los datos en un BD SQL en memoria. Esto se hizo
-por simplicidad en el despliegue. Pero se tuvo cuidado de organizar los repositorios de tal manera que sea fácilmente
-extendible una persistencia más acorde con los requerimientos de un microservicio desplegado en la nube.
+### Persistence
+La capa de persistencia se implementó mediante spring-data almacenando los datos en un BD desplegada en GCP Cloud SQL.
+Cabe aclarar que los repositorios y funciones de negocio en la capa de dominio se organizaron de manera limpia e
+independiente la capa de persistencia. Por lo tanto el proyecto puede cambiar rápidamente a un modelo NoSQL sin tener
+que modificar nada en la capa de dominio.
 
 ![persistence](https://github.com/luiseraso/fuego-quazar/blob/02127433979382ac6df9133db94783f8d22f3f7d/doc/persistence.png?raw=true "persistence module")
 
@@ -62,5 +72,5 @@ Por el momento se compone de tres paquetes `entity` donde se definen las clases 
 El paquete `crud` que define los repositorios propios de Spring-Data. Y el paquete `mapper` que se encarga del mapeo
 de las clases entidad a clases del dominio y viceversa.
 
-# Pruebas unitaras
+## Pruebas unitaras
 Se incluyeron pruebas unitarias para cada uno de los servicios del dominio.

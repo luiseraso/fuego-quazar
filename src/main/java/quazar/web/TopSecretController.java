@@ -62,35 +62,9 @@ public class TopSecretController {
                                     .build()));
     }
 
-
-
-
-     /*
-    @GetMapping("/sample")
-    public RequestMessageDto sampleDto() {
-        String[] message1 = {"",     "es", "",   ""};
-        String[] message2 = {"este", "",   "un", "mensaje"};
-        String[] message3 = {"",     "es", "un", "mensaje"};
-
-        return new RequestMessageDto(
-                List.of(
-                InterceptedMessageDto.builder()
-                        .name("kenobi")
-                        .distance(100.0)
-                        .messages(message1)
-                        .build(),
-                InterceptedMessageDto.builder()
-                        .name("sato")
-                        .distance(142.7)
-                        .messages(message2)
-                        .build(),
-                InterceptedMessageDto.builder()
-                        .name("skywalker")
-                        .distance(115.5)
-                        .messages(message3)
-                        .build()
-                )
-        );
+    @DeleteMapping(path="topsecret_split")
+    public void topSecretSplitSaveDeleteAllSplitMessage() {
+        communicationManager.removeAllSplitMessages();
     }
-    */
+
 }

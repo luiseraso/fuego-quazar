@@ -1,5 +1,6 @@
 package quazar.persistence.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,6 +11,7 @@ import javax.persistence.Table;
 public class SatelliteEntity {
 
     @Id
+    @Column(name = "satellite_name")
     private String name;
 
     @Embedded
