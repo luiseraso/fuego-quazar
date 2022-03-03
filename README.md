@@ -1,58 +1,50 @@
 # Fuego Quazar
+## Project Organization
+The project is divided into three packages: `domain`, `web` y `persistence`.
 
-## Despliegue en Cloud
-El proyecto de ejemplo está desplegado en la nube mediante el servicio de App Engine de `Google GCP`, igualmente incluye
-una capa de persistencia implementada en `Cloud SQL`.
-
-- URL: `https://quazar-321812.uc.r.appspot.com`
-- Detalles de la API: [https://quazar-321812.uc.r.appspot.com/swagger-ui.html](https://quazar-321812.uc.r.appspot.com/swagger-ui.html)
-- Igualmente en la carpeta `/doc` se incluyó un proyecto postman con ejemplos de llamadas a los servicios.
-
-## Organización del proyecto
-El proyecto está divido en tres paquetes: `domain`, `web` y `persistence`.
-
-Las implementación de las funcionalidades del negocio se encuentran en el paquete dominio. Por lo tanto, este documento
-se centra en explicar dicho módulo. La figura a continuación incluye los conceptos principales.
+The implementation of the business functionalities is in the domain package. Therefore, this document focuses on 
+explaining that module. The figure below includes the main concepts.
 
 ![dominio](https://github.com/luiseraso/fuego-quazar/blob/f456469ecb3ee16646da088dda4be6285d814fb3/doc/domain.png?raw=true "domain module")
 
 ### Domain
-#### Clases de Dominio
-Se tiene 4 clases de dominio representadas en color azul. `Satellite` la cual gestiona la información de cada satélite
-incluidas sus coordenadas `Coordinate`. `InterceptedMessage` que gestiona los mensajes recibidos, los que incluye el
-satélite, la distancia y el mensaje encriptado (porción conocida del mensaje). Estas tienen asociado un repositorio de
-dominio el cual define una interfaz a ser implementada por diferentes modelos de persistencia. La clase `ResolvedMessage`
-no incluye un repositorio porque solo se utiliza para responder a las peticiones de las capas superiores y no requiere
-ser persistida. Los mensajes de solicitud de las capas superiores utilizan la clase `InterceptedMessage`.
+#### Domain classes
+There are 4 domain classes represented in blue. `Satellite` which manages the information of each satellite including
+its coordinates `Coordinate`. `InterceptedMessage` which manages the received messages, the message includes the
+satellite, the distance and the encrypted message (known portion of the message). These have an associated domain 
+repository which defines an interface to be implemented by different persistence models. The class `ResolvedMessage` 
+does not include a repository because it is only used to respond requests from higher layers and does not need to be
+persisted. Request messages from higher layers use the class `InterceptedMessage`.
 
-#### Servicios
-La funcionalidad a desarrollar en el nivel 1 del proyecto se implementó mediante los servicios `StarshipFinder` y
-`MessageDecryptor`. Los dos son servicios que no manejan ningún estado y por lo tanto no acceden a ningún repositorio.
+#### Services
+`StarshipFinder` and `MessageDecryptor`. Both are services that do not handle any state and therefore do not access any
+repository.
 
-`StarshipFinder` recibe una lista de mensajes interceptados (`InterceptedMessage`). Con esto calcula la ubicación de la
-nave enemiga.
+`StarshipFinder` receives a list of intercepted messages (`InterceptedMessage`). With this it calculates the location of
+the enemy ship.
 
-`MessageDecryptor` recibe un array multidimensional con todos los mensajes y devuelve el mensaje cifrado.
+`MessageDecryptor` receives a multidimensional array with all the messages and returns the encrypted message.
 
-`CommunicationManager` implementa las funcionalidades requeridas para posteriormente ser consumidas por el controlador
-REST (Nivel 2 de los requisitos). Este servicio tiene acceso a los repositorios para verificar la información de los
-satélites y los mensajes guardados previamente. Por otra parte, delega de forma asíncrona la ejecución de las tareas de
-localización de la nave enemiga y descifrado del mensaje a los otros dos servicios `StarshipFinder` y`MessageDecryptor`.
-Cada metodo en este servicio está asociada a las llamadas REST que se implementan posteriormente en la capa web:
+`CommunicationManager` implements the required functionalities to be consumed later by the REST controller. This service
+has access to repositories to check satellite information and previously saved messages. On the other hand, it
+asynchronously delegates the execution of the tasks of locating the enemy (`StarshipFinder`) ship and decrypting the
+message (`MessageDecryptor`). Each method in this service is associated with REST calls that are subsequently
+implemented in the web layer:
+
 - `resolveWithReceivedMessages`: POST /topsecret
 - `saveSplitMessage`: POST /topsecret_split/{satellite_name}
 - `resolveWithSavedMessages`: GET /topsecret_split
 
 #### Repository
-Solo se tienen dos interfaces que definen el comportamiento para los repositorios. `InterceptedMessageRepository` y
-`SatelliteRepository`. Los repositorios son limpios, es decir solo reciben como parámetros y devuelven como resultado
-objetos definidos en el dominio.
+There are only two interfaces that define the behavior for the repositories. `InterceptedMessageRepository` and
+`SatelliteRepository`. The repositories are clean; that means, they only receive as parameters and return as a result
+objects defined in the domain.
 
 ### Web
-El paquete web implementa los servicios REST solicitados mediante el controlador `TopSecretController`. Su función es
-transformar los mensajes recibidos mediante DTOs a mensajes del dominio para posteriormente delegar la ejecución de las
-solicitudes al servicio `CommunicationManager`.
-En este paquete también se incluyen algunas clases DTOs encargadas de mapear los mensajes de solicitud y respuesta REST.
+The web package implements the requested REST services using the controller `TopSecretController`. Its function is to
+transform the messages received through DTOs to messages from the domain in order to subsequently delegate the execution
+of the requests to the service `CommunicationManager`.
+This package also includes some DTO classes responsible for mapping the REST request and response messages.
 
 ![web](https://github.com/luiseraso/fuego-quazar/blob/e4895c70419cf5e5560a5eac16f8808a3348c26d/doc/web.png?raw=true "web module")
 
@@ -61,16 +53,16 @@ En este paquete también se incluyen algunas clases DTOs encargadas de mapear lo
 - `topSecretSplitResolveWithSavedMessages`: GET /topsecret_split
 
 ### Persistence
-La capa de persistencia se implementó mediante spring-data almacenando los datos en un BD desplegada en GCP Cloud SQL.
-Cabe aclarar que los repositorios y funciones de negocio en la capa de dominio se organizaron de manera limpia e
-independiente la capa de persistencia. Por lo tanto el proyecto puede cambiar rápidamente a un modelo NoSQL sin tener
-que modificar nada en la capa de dominio.
+The persistence layer was implemented using spring-data, storing the data in a database deployed in GCP Cloud SQL.
+It should be noted that the repositories and business functions in the domain layer were organized cleanly and
+independently of the persistence layer. Therefore, the project can quickly switch to a NoSQL model without having to
+modify anything in the domain layer.
 
 ![persistence](https://github.com/luiseraso/fuego-quazar/blob/02127433979382ac6df9133db94783f8d22f3f7d/doc/persistence.png?raw=true "persistence module")
 
-Por el momento se compone de tres paquetes `entity` donde se definen las clases entidad que se encargan del ORM.
-El paquete `crud` que define los repositorios propios de Spring-Data. Y el paquete `mapper` que se encarga del mapeo
-de las clases entidad a clases del dominio y viceversa.
+At the moment it is made up of three packages `entity` where the entity classes that are in charge of the ORM are
+defined. The package `crud` that defines Spring-Data's own repositories. Finally, the package `mapper` that handles the
+mapping of entity classes to domain classes and vice versa.
 
-## Pruebas unitaras
-Se incluyeron pruebas unitarias para cada uno de los servicios del dominio.
+## Unit tests
+Unit tests were included for each of the domain services.
